@@ -17,149 +17,8 @@ from stompy.grid import shadow_cdt, exact_delaunay
 ## 
 bounds=wkb2shp.shp2geom('region-bounds-v00.shp')
 
-## 
-
-g=unstructured_grid.UnstructuredGrid()
-
-for geo in bounds['geom']:
-    pnts=np.array(geo)
-
-    A=pnts[:-1]
-    B=pnts[1:]
-
-    for a,b in zip(A,B):
-        na=g.add_or_find_node(x=a)
-        nb=g.add_or_find_node(x=b)
-        try:
-            j=g.add_edge(nodes=[na,nb])
-        except g.GridException:
-            pass
-
-cycles=g.find_cycles(max_cycle_len=g.Nnodes())
-
-polys=[geometry.Polygon( g.nodes['x'][cycle] )
-       for cycle in cycles ]
-
-## 
-
-# the base class for ShadowCDT provides more of the
-# stuff we want.
-cdt=shadow_cdt.ShadowCDT(g)
-
-## 
-plt.clf()
-cdt.plot_edges(lw=0.5,color='k')
-
-## 
-import sys
-# the new way - calculated voronoi points directly from the triangles
-# in the delaunay triangulation, then match with edges with a hash
-# on edge [a,b] node pairs
-def subdivide():
-    # what does cdt need to provide for this to work?
-    vcenters = cdt.cells_center(refresh=True)
-
-    n_edges = cdt.Nedges()
-    to_subdivide = []
-
-    min_edge_length=10.0
-
-    for j_g in g.valid_edge_iter(): 
-        a,b = g.edges['nodes'][j_g] 
-        j=cdt.nodes_to_edge([a,b])
-        cells= cdt.edges['cells'][j]
-
-        assert cells.max()>=0
-
-        for ci,c in enumerate(cells):
-            if c<0:
-                continue
-
-            # Need the signed distance here:
-            pntV = vcenters[c]
-            pntA = cdt.nodes['x'][a]
-            pntB = cdt.nodes['x'][b]
-            AB=pntB-pntA
-            AV=pntV-pntA
-            # just switch sign on this
-            left=utils.to_unit(np.array([-AB[1],AB[0]]))
-            if ci==1:
-                left*=-1
-            line_clearance=np.dot(left,AV)
-            v_radius = utils.mag(AV)
-
-            if utils.mag(AB)<min_edge_length:
-                continue
-            # line_clearance=utils.point_line_distance(vcenters[c],
-            #                                         cdt.nodes['x'][ [a,b] ] )
-            # v_radius=utils.dist( vcenters[c], cdt.nodes['x'][a] )
-
-            if (v_radius > 1.2*line_clearance) and (v_radius > min_edge_length):
-                # second check - make sure that neither AC nor BC are also on the
-                # boundary
-                c_j=cdt.cell_to_edges(c)
-                count=cdt.edges['constrained'][c_j].sum()
-
-                if count == 1:
-                    to_subdivide.append(j_g)
-                    break
-                elif count == 0:
-                    print("While looking at edge %d=(%d,%d)"%(j_g,a,b))
-                    raise Exception("We should have found at least 1 boundary edge")
-                elif count == 3:
-                    print("WARNING: Unexpected count of boundary edges in one element: ",count)
-
-    for j in to_subdivide:
-        sys.stdout.write(str(j)+",")
-        sys.stdout.flush()
-        g.split_edge(j)
-
-    return len(to_subdivide)
-## 
-while 1:
-    n_new = subdivide()
-    print("Subdivide made %d new nodes"%n_new)
-    if n_new == 0:
-        break
-## 
-
-
-# Limit that to cdt cells for which the centroid is inside the domain
-from shapely import ops, geometry
-
-bounds=wkb2shp.shp2geom('region-bounds-v00.shp')
-
-domain_poly=ops.cascaded_union(polys)
-
-
-select_cells=[domain_poly.contains( geometry.Point(cxy) )
-              for cxy in cdt.cells_centroid() ]
-select_cells=np.array(select_cells)
-
-## 
-
-# come up with scales:
-vc=cdt.cells_center(refresh=True)
-diams=np.zeros(cdt.Ncells(),np.float64)
-diams[:]=0
-
-for c in cdt.valid_cell_iter():
-    n=cdt.cells['nodes'][c,0]
-    radius=utils.dist( vc[c], cdt.nodes['x'][n] )
-    diams[c]=2*radius
-
-plt.clf()
-ccoll=cdt.plot_cells(values=diams,mask=select_cells)
-ccoll.set_clim([1,500])
-
-g.plot_edges(color='k')
-
-## 
-X=vc[select_cells]
-# F=diams[select_cells]/2.0 # scale down to get 2-3 cells across
-F=diams[select_cells] * 1.15 # aim for 1 cell across
-
-apollo=field.PyApolloniusField(X=X,F=F)
+xyz=np.loadtxt('apollo-xyz.txt') # run gen_scale to make this
+apollo=field.PyApolloniusField(X=xyz[:,:2],F=xyz[:,2])
 
 
 ## 
@@ -270,3 +129,174 @@ g_safe.delete_node_field('vh')
 g_safe.write_ugrid(os.path.join(grid_dir,'grid-v00.nc'),overwrite=True)
 
 g_safe.write_edges_shp(os.path.join(grid_dir,'grid-v00.shp'))
+
+## 
+
+# with the check_edits() machinery, it's failing pretty fast.
+plt.figure(1).clf()
+fig,ax=plt.subplots(num=1)
+# zoom=(568019.3257816283, 568370.5310039715, 4152623.361854631, 4152885.0663912804)
+af.grid.plot_edges(lw=0.5,color='k')
+
+# af.choose_site().plot()
+af.grid.plot_nodes(clip=zoom,labeler=lambda i,r:str(i))
+ax.axis(zoom)
+
+## 
+self=af
+cp=self.grid.checkpoint()
+
+## 
+
+site=self.choose_site()
+resampled_success = self.resample_neighbors(site)
+actions=site.actions()
+metrics=[a.metric(site) for a in actions]
+bests=np.argsort(metrics)
+best=bests[0]
+self.log.info("Chose strategy %s"%( actions[best] ) )
+edits=actions[best].execute(site)
+
+## 
+opt_edits=self.optimize_edits(edits)
+failures=self.check_edits(opt_edits)
+
+## 
+plt.figure(1).clf()
+fig,ax=plt.subplots(num=1)
+zoom=(570089.9221043529, 570258.4213675127, 4149369.4725253694, 4149495.031653724)
+af.grid.plot_edges(lw=0.5,color='k')
+ax.axis(zoom)
+## 
+
+# maybe part of it is using a bad value for scale?
+# pdb.run("af.relax_free_node(1319)")
+n=481
+# cost=self.cost_function(n)
+# x0=self.grid.nodes['x'][n]
+# pdb.run("cost(x0)")
+
+# in this case, the static edge is shorter than desired
+# the other two edges long
+# cc_cost is 1.75
+# scale_cost before scaling is 1061, and 0.24 after scaling
+pdb.run("af.relax_node(n)")
+# maybe the problem is that we're weighting the shortest 
+# left distance too much, so it values isosceles?
+
+
+## 
+# This is sucking.
+pdb.run("af.relax_free_node(1377)")
+
+
+## 
+
+# Debugging the cost function
+
+cost_method='cc_py'
+def cost_function(self,n):
+    """
+    Return a function which takes an x,y pair, and evaluates
+    a geometric cost function for node n based on the shape and
+    scale of triangle cells containing n
+    """
+    local_length = self.scale( self.grid.nodes['x'][n] )
+    my_cells = self.grid.node_to_cells(n)
+
+    if len(my_cells) == 0:
+        return None
+
+    cell_nodes = [self.grid.cell_to_nodes(c)
+                  for c in my_cells ]
+
+    # for the moment, can only deal with triangles
+    cell_nodes=np.array(cell_nodes)
+
+    # pack our neighbors from the cell list into an edge
+    # list that respects the CCW condition that pnt must be on the
+    # left of each segment
+    for j in range(len(cell_nodes)):
+        if cell_nodes[j,0] == n:
+            cell_nodes[j,:2] = cell_nodes[j,1:]
+        elif cell_nodes[j,1] == n:
+            cell_nodes[j,1] = cell_nodes[j,0]
+            cell_nodes[j,0] = cell_nodes[j,2] # otherwise, already set
+
+    edges = cell_nodes[:,:2]
+    edge_points = self.grid.nodes['x'][edges]
+
+    def cost(x,edge_points=edge_points,local_length=local_length):
+        return front.one_point_cost(x,edge_points,target_length=local_length)
+
+    Alist=[ [ e[0],e[1] ]
+            for e in edge_points[:,0,:] ]
+    Blist=[ [ e[0],e[1] ]
+            for e in edge_points[:,1,:] ]
+    EPS=1e-5*local_length
+
+    def cost_cc_and_scale_py(x0):
+        C=list(x0)
+        cc_cost=0
+        scale_cost=0
+
+        for A,B,cell_n in zip(Alist,Blist,cell_nodes):
+            tri_cc=front.circumcenter_py(A,B,C)
+
+            deltaAB=[ tri_cc[0] - A[0],
+                      tri_cc[1] - A[1]]
+            ABs=[B[0]-A[0],B[1]-A[1]]
+            magABs=math.sqrt( ABs[0]*ABs[0] + ABs[1]*ABs[1])
+            vecAB=[ABs[0]/magABs, ABs[1]/magABs]
+            leftAB=vecAB[0]*deltaAB[1] - vecAB[1]*deltaAB[0] 
+
+            deltaBC=[tri_cc[0] - B[0],
+                     tri_cc[1] - B[1]]
+            BCs=[C[0]-B[0], C[1]-B[1]]
+            magBCs=math.sqrt( BCs[0]*BCs[0] + BCs[1]*BCs[1] )
+            vecBC=[BCs[0]/magBCs, BCs[1]/magBCs]
+            leftBC=vecBC[0]*deltaBC[1] - vecBC[1]*deltaBC[0]
+
+            deltaCA=[tri_cc[0] - C[0],
+                     tri_cc[1] - C[1]]
+            CAs=[A[0]-C[0],A[1]-C[1]]
+            magCAs=math.sqrt(CAs[0]*CAs[0] + CAs[1]*CAs[1])
+            vecCA=[CAs[0]/magCAs, CAs[1]/magCAs]
+            leftCA=vecCA[0]*deltaCA[1] - vecCA[1]*deltaCA[0]
+
+            cc_fac=-4. # not bad
+            # cc_fac=-2. # a little nicer shape
+            # clip to 100, to avoid overflow in math.exp
+            if 0:
+                # this can favor isosceles too much
+                this_cc_cost = ( math.exp(min(100,cc_fac*leftAB/local_length)) +
+                                  math.exp(min(100,cc_fac*leftBC/local_length)) +
+                                  math.exp(min(100,cc_fac*leftCA/local_length)) )
+            else:
+                # maybe?
+                this_cc_cost = ( math.exp(min(100,cc_fac*leftAB/magABs)) +
+                                 math.exp(min(100,cc_fac*leftBC/magBCs)) +
+                                 math.exp(min(100,cc_fac*leftCA/magCAs)) )
+                
+            this_scale_cost=( (magABs-local_length)**2 
+                              + (magBCs-local_length)**2 
+                              + (magCAs-local_length)**2 )
+            this_scale_cost/=local_length*local_length
+            print "(%5d,%5d,%5d) => %8.4f cc  %8.4f scale"%(cell_n[0],cell_n[1],cell_n[2],
+                                                            this_cc_cost,this_scale_cost)
+            cc_cost+=this_cc_cost
+            scale_cost+=this_scale_cost
+
+        # With even weighting between these, some edges are pushed long rather than
+        # having nice angles.
+        # 3 is a shot in the dark.
+        return 3*cc_cost+scale_cost
+
+    if self.cost_method=='base':
+        return cost
+    elif self.cost_method=='cc_py':
+        return cost_cc_and_scale_py
+    else:
+        assert False
+
+print cost_function(af,1377)(af.grid.nodes['x'][1377])
