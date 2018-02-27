@@ -131,65 +131,33 @@ fig,ax=plt.subplots(num=1)
 af.grid.plot_edges(lw=0.5,color='k')
 
 # af.choose_site().plot()
-# af.grid.plot_nodes(clip=zoom,labeler=lambda i,r:str(i))
+af.grid.plot_nodes(clip=zoom,labeler=lambda i,r:str(i))
 # af.grid.plot_edges(clip=zoom,labeler=lambda i,r:r['oring'])
 ax.axis(zoom)
-
-# up to 2694, looks good.
-# 1147 is still just HINT
-# resampled_success is True, though no changes.
-# arguably 1147 should just be dropped.
-# the Join is attempted and looks okay.
-# seems like it doesn't have the same code as at home
-# Following step is looking okay...
-# wants to Resample.  That makes no changes, no improvement.
-# possible that rolling that back is a problem?
-# It's the join - it doesn't set oring for one of the
-#  'extra' edges.
-
-# when both are on a ring, it already requires that they
-# be on the same ring, and that ring matches the edge's ring
-# j_ac_ring
 
 ## 
 self=af
 cp=self.grid.checkpoint()
-
-## 
 
 site=self.choose_site()
 resampled_success = self.resample_neighbors(site)
 actions=site.actions()
 metrics=[a.metric(site) for a in actions]
 bests=np.argsort(metrics)
-best=bests[1]
+best=bests[0]
 self.log.info("Chose strategy %s"%( actions[best] ) )
 edits=actions[best].execute(site)
 
-## 
 opt_edits=self.optimize_edits(edits)
 failures=self.check_edits(opt_edits)
 
 ## 
 plt.figure(1).clf()
 fig,ax=plt.subplots(num=1)
-# zoom=(570089.9221043529, 570258.4213675127, 4149369.4725253694, 4149495.031653724)
+
 af.grid.plot_edges(lw=0.5,color='k')
+zoom=(568226.7714037431, 568778.130038031, 4150257.437975479, 4150668.289086835)
 ax.axis(zoom)
-
-## 
-from shapely import geometry
-cc=af.grid.cells_center()
-
-bad=[]
-for ci in af.grid.valid_cell_iter():
-    poly=af.grid.cell_polygon(ci)
-    if not poly.contains( geometry.Point(cc[ci]) ):
-        print "."
-        bad.append(ci)
-
-# 43 of em...
-
 
 ## 
 
@@ -265,24 +233,27 @@ def cost_function(self,n):
             vecCA=[CAs[0]/magCAs, CAs[1]/magCAs]
             leftCA=vecCA[0]*deltaCA[1] - vecCA[1]*deltaCA[0]
 
-            cc_fac=-4. # not bad
-            # cc_fac=-2. # a little nicer shape
+            # cc_fac=-4. # not bad
+            cc_fac=-4. # a little nicer shape
             # clip to 100, to avoid overflow in math.exp
             if 0:
-                # this can favor isosceles too much
+                # this can favor isosceles too much?
                 this_cc_cost = ( math.exp(min(100,cc_fac*leftAB/local_length)) +
                                   math.exp(min(100,cc_fac*leftBC/local_length)) +
                                   math.exp(min(100,cc_fac*leftCA/local_length)) )
             else:
-                # maybe?
+                # maybe?  but long edges tend to have the shortest left-distance
                 this_cc_cost = ( math.exp(min(100,cc_fac*leftAB/magABs)) +
                                  math.exp(min(100,cc_fac*leftBC/magBCs)) +
                                  math.exp(min(100,cc_fac*leftCA/magCAs)) )
-                
-            this_scale_cost=( (magABs-local_length)**2 
-                              + (magBCs-local_length)**2 
-                              + (magCAs-local_length)**2 )
-            this_scale_cost/=local_length*local_length
+
+            if 1: # don't try as hard to get back to the local length?
+                avg_length=(magABs+magBCs+magCAs)/3
+
+            this_scale_cost=( (magABs-avg_length)**2 
+                              + (magBCs-avg_length)**2 
+                              + (magCAs-avg_length)**2 )
+            this_scale_cost/=avg_length*avg_length
             print "(%5d,%5d,%5d) => %8.4f cc  %8.4f scale"%(cell_n[0],cell_n[1],cell_n[2],
                                                             this_cc_cost,this_scale_cost)
             cc_cost+=this_cc_cost
@@ -291,7 +262,7 @@ def cost_function(self,n):
         # With even weighting between these, some edges are pushed long rather than
         # having nice angles.
         # 3 is a shot in the dark.
-        return 3*cc_cost+scale_cost
+        return 10*cc_cost+scale_cost
 
     if self.cost_method=='base':
         return cost
@@ -304,27 +275,8 @@ print cost_function(af,1377)(af.grid.nodes['x'][1377])
 
 ## 
 
-# on desktop:
 
-# when trying to slide 1150, fails because it only 
-# finds one neighbor.
-# the edge 1150-1147 (j=6393) has 0 oring, even though 
-# both nodes have oring=15.
-# this at loop_count=2695
 
-# at loop_count=1000:
-# the nodes 1150---1147 are all ring=15, then 1146 ring=11.
-# And all of those edges have oring=15.  
-af.grid.plot_edges( clip=zoom, labeler=lambda i,r: r['oring'])
 
-## 
-
-# When does one 1147 edges lose its ring?
-while 1:
-    af.loop(1)
-    print af.loop_count
-##     
-for j in af.grid.node_to_edges(1147):
-    a,b=af.grid.edges['nodes'][j]
-    print "   %5d -- %5d   oring=%3d"%( a,b, af.grid.edges['oring'][j] )
-
+# law of cosines?
+# maybe for speeding it up
