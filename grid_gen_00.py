@@ -105,30 +105,22 @@ for a,b in utils.circular_pairs(outside):
     g.edges['cells'][j,side]=g.UNDEFINED
 
 
-af.loop() 
+af.loop(2695) 
+
 
 ## 
-
-plt.figure(1).clf()
-fig,ax=plt.subplots(num=1)
-
-g.plot_edges(ax=ax,lw=0.5)
-
-for curve in af.curves:
-    curve.plot(ax=ax,alpha=0.5,zorder=-1,lw=2)
-# ax.axis(zoom)
-
-## 
-
-grid_dir='grid_v00'
-os.path.exists(grid_dir) or os.mkdir(grid_dir)
-
-g_safe=unstructured_grid.UnstructuredGrid(grid=g)
-g_safe.renumber()
-g_safe.delete_node_field('vh')
-g_safe.write_ugrid(os.path.join(grid_dir,'grid-v00.nc'),overwrite=True)
-
-g_safe.write_edges_shp(os.path.join(grid_dir,'grid-v00.shp'))
+ 
+# grid_dir='grid_v00'
+# os.path.exists(grid_dir) or os.mkdir(grid_dir)
+# 
+# g_safe=unstructured_grid.UnstructuredGrid(grid=g)
+# g_safe.renumber()
+# g_safe.delete_node_field('vh')
+# g_safe.write_ugrid(os.path.join(grid_dir,'grid-v00.nc'),overwrite=True)
+# 
+# g_safe.write_edges_shp(os.path.join(grid_dir,'grid-v00.shp'))
+# 
+# ## 
 
 ## 
 
@@ -139,8 +131,25 @@ fig,ax=plt.subplots(num=1)
 af.grid.plot_edges(lw=0.5,color='k')
 
 # af.choose_site().plot()
-af.grid.plot_nodes(clip=zoom,labeler=lambda i,r:str(i))
+# af.grid.plot_nodes(clip=zoom,labeler=lambda i,r:str(i))
+# af.grid.plot_edges(clip=zoom,labeler=lambda i,r:r['oring'])
 ax.axis(zoom)
+
+# up to 2694, looks good.
+# 1147 is still just HINT
+# resampled_success is True, though no changes.
+# arguably 1147 should just be dropped.
+# the Join is attempted and looks okay.
+# seems like it doesn't have the same code as at home
+# Following step is looking okay...
+# wants to Resample.  That makes no changes, no improvement.
+# possible that rolling that back is a problem?
+# It's the join - it doesn't set oring for one of the
+#  'extra' edges.
+
+# when both are on a ring, it already requires that they
+# be on the same ring, and that ring matches the edge's ring
+# j_ac_ring
 
 ## 
 self=af
@@ -153,7 +162,7 @@ resampled_success = self.resample_neighbors(site)
 actions=site.actions()
 metrics=[a.metric(site) for a in actions]
 bests=np.argsort(metrics)
-best=bests[0]
+best=bests[1]
 self.log.info("Chose strategy %s"%( actions[best] ) )
 edits=actions[best].execute(site)
 
@@ -164,30 +173,22 @@ failures=self.check_edits(opt_edits)
 ## 
 plt.figure(1).clf()
 fig,ax=plt.subplots(num=1)
-zoom=(570089.9221043529, 570258.4213675127, 4149369.4725253694, 4149495.031653724)
+# zoom=(570089.9221043529, 570258.4213675127, 4149369.4725253694, 4149495.031653724)
 af.grid.plot_edges(lw=0.5,color='k')
 ax.axis(zoom)
-## 
-
-# maybe part of it is using a bad value for scale?
-# pdb.run("af.relax_free_node(1319)")
-n=481
-# cost=self.cost_function(n)
-# x0=self.grid.nodes['x'][n]
-# pdb.run("cost(x0)")
-
-# in this case, the static edge is shorter than desired
-# the other two edges long
-# cc_cost is 1.75
-# scale_cost before scaling is 1061, and 0.24 after scaling
-pdb.run("af.relax_node(n)")
-# maybe the problem is that we're weighting the shortest 
-# left distance too much, so it values isosceles?
-
 
 ## 
-# This is sucking.
-pdb.run("af.relax_free_node(1377)")
+from shapely import geometry
+cc=af.grid.cells_center()
+
+bad=[]
+for ci in af.grid.valid_cell_iter():
+    poly=af.grid.cell_polygon(ci)
+    if not poly.contains( geometry.Point(cc[ci]) ):
+        print "."
+        bad.append(ci)
+
+# 43 of em...
 
 
 ## 
@@ -300,3 +301,30 @@ def cost_function(self,n):
         assert False
 
 print cost_function(af,1377)(af.grid.nodes['x'][1377])
+
+## 
+
+# on desktop:
+
+# when trying to slide 1150, fails because it only 
+# finds one neighbor.
+# the edge 1150-1147 (j=6393) has 0 oring, even though 
+# both nodes have oring=15.
+# this at loop_count=2695
+
+# at loop_count=1000:
+# the nodes 1150---1147 are all ring=15, then 1146 ring=11.
+# And all of those edges have oring=15.  
+af.grid.plot_edges( clip=zoom, labeler=lambda i,r: r['oring'])
+
+## 
+
+# When does one 1147 edges lose its ring?
+while 1:
+    af.loop(1)
+    print af.loop_count
+##     
+for j in af.grid.node_to_edges(1147):
+    a,b=af.grid.edges['nodes'][j]
+    print "   %5d -- %5d   oring=%3d"%( a,b, af.grid.edges['oring'][j] )
+

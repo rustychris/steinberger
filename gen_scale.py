@@ -1,3 +1,4 @@
+import sys
 import xarray as xr
 import six
 from matplotlib import cm
@@ -5,7 +6,8 @@ from matplotlib import cm
 import numpy as np
 import matplotlib.pyplot as plt
 
-from shapely import geometry
+from shapely import ops, geometry
+
 from stompy import utils
 from stompy.spatial import wkb2shp, field
 from stompy.grid import unstructured_grid, shadow_cdt
@@ -46,7 +48,6 @@ polys=[geometry.Polygon( g.nodes['x'][cycle] )
 cdt=shadow_cdt.ShadowCDT(g)
 
 ## 
-import sys
 # the new way - calculated voronoi points directly from the triangles
 # in the delaunay triangulation, then match with edges with a hash
 # on edge [a,b] node pairs
@@ -120,7 +121,6 @@ while 1:
 
 
 # Limit that to cdt cells for which the centroid is inside the domain
-from shapely import ops, geometry
 
 bounds=wkb2shp.shp2geom('region-bounds-v00.shp')
 
