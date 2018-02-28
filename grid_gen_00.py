@@ -1,6 +1,7 @@
 import xarray as xr
 import six
 from matplotlib import cm
+import scipy.optimize as opt
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -105,7 +106,7 @@ for a,b in utils.circular_pairs(outside):
     g.edges['cells'][j,side]=g.UNDEFINED
 
 
-af.loop(2695) 
+af.loop() 
 
 
 ## 
@@ -123,6 +124,10 @@ af.loop(2695)
 # ## 
 
 ## 
+edits=dict(nodes=[1943,247,2407])
+opt_edits=self.optimize_edits(edits)
+failures=self.check_edits(opt_edits)
+print failures['cells']
 
 # with the check_edits() machinery, it's failing pretty fast.
 plt.figure(1).clf()
@@ -130,7 +135,7 @@ fig,ax=plt.subplots(num=1)
 # zoom=(568019.3257816283, 568370.5310039715, 4152623.361854631, 4152885.0663912804)
 af.grid.plot_edges(lw=0.5,color='k')
 
-# af.choose_site().plot()
+af.choose_site().plot()
 af.grid.plot_nodes(clip=zoom,labeler=lambda i,r:str(i))
 # af.grid.plot_edges(clip=zoom,labeler=lambda i,r:r['oring'])
 ax.axis(zoom)
@@ -150,6 +155,7 @@ edits=actions[best].execute(site)
 
 opt_edits=self.optimize_edits(edits)
 failures=self.check_edits(opt_edits)
+print failures['cells']
 
 ## 
 plt.figure(1).clf()
@@ -239,16 +245,22 @@ def cost_function(self,n):
             if 0:
                 # this can favor isosceles too much?
                 this_cc_cost = ( math.exp(min(100,cc_fac*leftAB/local_length)) +
-                                  math.exp(min(100,cc_fac*leftBC/local_length)) +
-                                  math.exp(min(100,cc_fac*leftCA/local_length)) )
+                                 math.exp(min(100,cc_fac*leftBC/local_length)) +
+                                 math.exp(min(100,cc_fac*leftCA/local_length)) )
             else:
                 # maybe?  but long edges tend to have the shortest left-distance
                 this_cc_cost = ( math.exp(min(100,cc_fac*leftAB/magABs)) +
                                  math.exp(min(100,cc_fac*leftBC/magBCs)) +
                                  math.exp(min(100,cc_fac*leftCA/magCAs)) )
 
-            if 1: # don't try as hard to get back to the local length?
+            if 0: # don't try as hard to get back to the local length?
                 avg_length=(magABs+magBCs+magCAs)/3
+            elif 0:
+                avg_length=local_length
+            else:
+                # mixture
+                alpha=1.0
+                avg_length=alpha*local_length + (1-alpha)*(magABs+magBCs+magCAs)/3
 
             this_scale_cost=( (magABs-avg_length)**2 
                               + (magBCs-avg_length)**2 
@@ -262,7 +274,8 @@ def cost_function(self,n):
         # With even weighting between these, some edges are pushed long rather than
         # having nice angles.
         # 3 is a shot in the dark.
-        return 10*cc_cost+scale_cost
+        # 50 is more effective at avoiding a non-orthogonal cell
+        return 50*cc_cost+scale_cost
 
     if self.cost_method=='base':
         return cost
@@ -271,12 +284,26 @@ def cost_function(self,n):
     else:
         assert False
 
-print cost_function(af,1377)(af.grid.nodes['x'][1377])
+n=247
+cost=cost_function(af,n)
+print cost(af.grid.nodes['x'][n])
 
-## 
+new_x = opt.fmin(cost,af.grid.nodes['x'][n],
+                 xtol=1e-4,disp=0)
 
 
+plt.figure(1).clf()
+fig,ax=plt.subplots(num=1)
 
+ax.plot( new_x[:1],new_x[1:],'go')
+cp=af.grid.checkpoint()
+try:
+    af.grid.modify_node(n=n,x=new_x)
+    af.grid.plot_edges(lw=0.5,color='k',clip=zoom)
+finally:
+    af.grid.revert(cp)
+
+ax.axis(zoom)
 
 # law of cosines?
 # maybe for speeding it up
