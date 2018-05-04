@@ -1,3 +1,6 @@
+"""
+Handle this with more tried-and-true tom code
+"""
 import os
 import xarray as xr
 import six
