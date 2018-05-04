@@ -13,9 +13,9 @@ from stompy.model.delft import dfm_grid
 
 mdu=dio.MDUFile('template.mdu')
 
-mdu['geometry','NetFile']='stein_00_net.nc'
+mdu['geometry','NetFile']='stein_01_net.nc'
 
-grid=dfm_grid.DFMGrid('stein_00_net.nc')
+grid=dfm_grid.DFMGrid('stein_01_net.nc')
 
 run_base_dir='runs/test00'
 mdu.set_time_range(start=np.datetime64('2010-01-01'),stop =np.datetime64('2010-01-05'))

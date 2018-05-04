@@ -7,7 +7,7 @@ from stompy.model.delft import dfm_grid
 
 dem=field.GdalGrid('master_dem_v00.tif')
 
-g=unstructured_grid.UnstructuredGrid.from_ugrid('grid_v00/grid-v00.nc')
+g=unstructured_grid.UnstructuredGrid.from_ugrid('grid_v01/grid-v01.nc')
 
 ## 
 
@@ -19,4 +19,4 @@ node_depths=depth_connectivity.greedy_edgemin_to_node(g,basic_node_depths,edge_d
 g.add_node_field('depth',node_depths)
 
 
-dfm_grid.write_dfm(g,'dfm/stein_00_net.nc')
+dfm_grid.write_dfm(g,'dfm/stein_01_net.nc')
