@@ -160,8 +160,22 @@ plt.figure(1).clf()
 fig,ax=plt.subplots(num=1)
 
 af.grid.plot_edges(lw=0.5,color='k')
-# zoom=(568226.7714037431, 568778.130038031, 4150257.437975479, 4150668.289086835)
-ax.axis(zoom)
+
+#zoom=(568226.7714037431, 568778.130038031, 4150257.437975479, 4150668.289086835)
+#ax.axis(zoom)
+ccoll=af.grid.plot_cells(values=scale_fac,cmap='seismic')
+plt.colorbar(ccoll)
+
+## 
+
+# with the updated cost function, the number of cells has gotten
+# much larger, to 11k.
+A=af.grid.cells_area()
+cell_L=np.sqrt(4/np.sqrt(3) * A)
+real_L=af.grid.edges_length()
+target_L=af.scale( af.grid.cells_center() )
+
+scale_fac=np.log10(cell_L/target_L)
 
 ## 
 
