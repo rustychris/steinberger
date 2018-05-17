@@ -8,7 +8,6 @@ from stompy.io.local import noaa_coops
 from stompy import filters
 from stompy.model.delft import dfm_grid
 
-
 ## 
 
 mdu=dio.MDUFile('template.mdu')
@@ -23,7 +22,7 @@ mdu.set_time_range(start=np.datetime64('2010-01-01'),stop =np.datetime64('2010-0
 os.path.exists(run_base_dir) or os.makedirs(run_base_dir)
 mdu.set_filename(os.path.join(run_base_dir,'flowfm.mdu'))
 
-
+## - 
 # Set BCs from shapefile
 import bcs
 six.moves.reload_module(bcs)
@@ -33,15 +32,16 @@ def factory(feat):
     return eval(feat['src'])
 
 bc_shp='forcing.shp'
-bcs=wkb2shp.shp2geom(bc_shp)
+bc_shp_data=wkb2shp.shp2geom(bc_shp)
 
-for bc in bcs:
+for bc in bc_shp_data:
     data_src=factory(bc)
     data_src.write(mdu,bc)
 
 mdu.write()
 
-mdu['geometry','NetFile']='stein_00_net.nc'
-
 dfm_grid.write_dfm(grid,mdu.filepath(['geometry','NetFile']),
                    overwrite=True)
+
+## 
+

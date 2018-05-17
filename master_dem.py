@@ -11,8 +11,15 @@ def factory(attrs):
     geo_bounds=attrs['geom'].bounds
 
     if attrs['src_name']=='usgs_2m_topobathy_steinberger':
-        fn='steinberger-dem-crop.tif'
-        return field.GdalGrid(fn,geo_bounds=geo_bounds)
+        fns=['steinberger-dem-crop.tif',
+             ('/media/idrive/BASELAYERS/Elevation_DerivedProducts/'
+              'LiDAR 2005-2012 entire Bay Area from AECOM/USGS_TopoBathy/'
+              'San_Francisco_TopoBathy_Elevation_2m.tif') ]
+        for fn in fns:
+            if os.path.exists(fn):
+                return field.GdalGrid(fn,geo_bounds=geo_bounds)
+        else:
+            raise Exception("Couldn't find the USGS 2m data")
     if attrs['src_name'].startswith('py:'):
         expr=attrs['src_name'][3:]
         # something like 'ConstantField(-1.0)'

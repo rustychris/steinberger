@@ -11,13 +11,13 @@
     <layer-tree-layer expanded="1" providerKey="ogr" checked="Qt::Unchecked" id="observation_points20170707105208968" source="/media/hpc/opt/data/delft/sfb_dfm_v2/inputs-static/observation-points.shp" name="observation-points - SFB_DFM_v2">
       <customproperties/>
     </layer-tree-layer>
-    <layer-tree-layer expanded="1" providerKey="ogr" checked="Qt::Checked" id="apollo_xyz20180504154600585" source="/home/rusty/src/steinberger/apollo-xyz.shp" name="apollo-xyz">
+    <layer-tree-layer expanded="1" providerKey="ogr" checked="Qt::Unchecked" id="apollo_xyz20180504154600585" source="/home/rusty/src/steinberger/apollo-xyz.shp" name="apollo-xyz">
       <customproperties/>
     </layer-tree-layer>
-    <layer-tree-layer expanded="1" providerKey="delimitedtext" checked="Qt::Checked" id="apollo_xyz20180503142841975" source="file:///home/rusty/src/steinberger/apollo-xyz.txt?type=regexp&amp;delimiter=%5Cs+&amp;useHeader=No&amp;xField=field_1&amp;yField=field_2&amp;spatialIndex=no&amp;subsetIndex=no&amp;watchFile=no" name="apollo-xyz">
+    <layer-tree-layer expanded="1" providerKey="delimitedtext" checked="Qt::Unchecked" id="apollo_xyz20180503142841975" source="file:///home/rusty/src/steinberger/apollo-xyz.txt?type=regexp&amp;delimiter=%5Cs+&amp;useHeader=No&amp;xField=field_1&amp;yField=field_2&amp;spatialIndex=no&amp;subsetIndex=no&amp;watchFile=no" name="apollo-xyz">
       <customproperties/>
     </layer-tree-layer>
-    <layer-tree-layer expanded="0" providerKey="ogr" checked="Qt::Checked" id="regions_from_bounds20180123175934721" source="/home/rusty/Google/1_Nutrient_Share/1_Projects_NUTRIENTS/Modeling/SteinbergerPMU/regions_from_bounds.shp" name="regions_from_bounds">
+    <layer-tree-layer expanded="0" providerKey="ogr" checked="Qt::Unchecked" id="regions_from_bounds20180123175934721" source="/home/rusty/Google/1_Nutrient_Share/1_Projects_NUTRIENTS/Modeling/SteinbergerPMU/regions_from_bounds.shp" name="regions_from_bounds">
       <customproperties/>
     </layer-tree-layer>
     <layer-tree-layer expanded="1" providerKey="ogr" checked="Qt::Checked" id="region_bounds_v0020180123175927055" source="/home/rusty/Google/1_Nutrient_Share/1_Projects_NUTRIENTS/Modeling/SteinbergerPMU/region-bounds-v00.shp" name="region-bounds-v00">
@@ -55,10 +55,10 @@
   <mapcanvas>
     <units>meters</units>
     <extent>
-      <xmin>557263.54369663167744875</xmin>
-      <ymin>4141181.85010640369728208</ymin>
-      <xmax>577566.15550645161420107</xmax>
-      <ymax>4167402.88045905577018857</ymax>
+      <xmin>566594.72829194634687155</xmin>
+      <ymin>4150362.29919041506946087</ymin>
+      <xmax>569132.55476817383896559</xmax>
+      <ymax>4153639.92798449657857418</ymax>
     </extent>
     <rotation>0</rotation>
     <projections>1</projections>
@@ -101,8 +101,10 @@
       <layer_coordinate_transform destAuthId="EPSG:26910" srcAuthId="EPSG:26910" srcDatumTransform="-1" destDatumTransform="-1" layerid="merged_2m20171025082925134"/>
       <layer_coordinate_transform destAuthId="EPSG:26910" srcAuthId="EPSG:26910" srcDatumTransform="-1" destDatumTransform="-1" layerid="grid_edges20171218084237167"/>
       <layer_coordinate_transform destAuthId="EPSG:26910" srcAuthId="USER:100004" srcDatumTransform="-1" destDatumTransform="-1" layerid="Watershed2_CustomOutFlowPts20170919141143033"/>
+      <layer_coordinate_transform destAuthId="EPSG:26910" srcAuthId="EPSG:32610" srcDatumTransform="-1" destDatumTransform="-1" layerid="20180502_183203_1051_3B_AnalyticMS_SR20180517160058549"/>
       <layer_coordinate_transform destAuthId="EPSG:26910" srcAuthId="EPSG:26910" srcDatumTransform="-1" destDatumTransform="-1" layerid="results_v00_copy20180124100258889"/>
       <layer_coordinate_transform destAuthId="EPSG:26910" srcAuthId="EPSG:26910" srcDatumTransform="-1" destDatumTransform="-1" layerid="ludwig_snap20171221113551004"/>
+      <layer_coordinate_transform destAuthId="EPSG:26910" srcAuthId="EPSG:32610" srcDatumTransform="-1" destDatumTransform="-1" layerid="20180502_183203_1051_3B_AnalyticMS20180517160042083"/>
       <layer_coordinate_transform destAuthId="EPSG:26910" srcAuthId="EPSG:26910" srcDatumTransform="-1" destDatumTransform="-1" layerid="ludwig_snap_flip20171221114450738"/>
       <layer_coordinate_transform destAuthId="EPSG:26910" srcAuthId="EPSG:26910" srcDatumTransform="-1" destDatumTransform="-1" layerid="grid_poly_v0020180102114548744"/>
       <layer_coordinate_transform destAuthId="EPSG:26910" srcAuthId="EPSG:26910" srcDatumTransform="-1" destDatumTransform="-1" layerid="apollo_xyz20180504154600585"/>
@@ -158,19 +160,19 @@
         <legendlayerfile isInOverview="0" layerid="observation_points20170707105208968" visible="0"/>
       </filegroup>
     </legendlayer>
-    <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="apollo-xyz" showFeatureCount="0">
+    <legendlayer drawingOrder="-1" open="true" checked="Qt::Unchecked" name="apollo-xyz" showFeatureCount="0">
       <filegroup open="true" hidden="false">
-        <legendlayerfile isInOverview="0" layerid="apollo_xyz20180504154600585" visible="1"/>
+        <legendlayerfile isInOverview="0" layerid="apollo_xyz20180504154600585" visible="0"/>
       </filegroup>
     </legendlayer>
-    <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="apollo-xyz" showFeatureCount="0">
+    <legendlayer drawingOrder="-1" open="true" checked="Qt::Unchecked" name="apollo-xyz" showFeatureCount="0">
       <filegroup open="true" hidden="false">
-        <legendlayerfile isInOverview="0" layerid="apollo_xyz20180503142841975" visible="1"/>
+        <legendlayerfile isInOverview="0" layerid="apollo_xyz20180503142841975" visible="0"/>
       </filegroup>
     </legendlayer>
-    <legendlayer drawingOrder="-1" open="false" checked="Qt::Checked" name="regions_from_bounds" showFeatureCount="0">
+    <legendlayer drawingOrder="-1" open="false" checked="Qt::Unchecked" name="regions_from_bounds" showFeatureCount="0">
       <filegroup open="false" hidden="false">
-        <legendlayerfile isInOverview="0" layerid="regions_from_bounds20180123175934721" visible="1"/>
+        <legendlayerfile isInOverview="0" layerid="regions_from_bounds20180123175934721" visible="0"/>
       </filegroup>
     </legendlayer>
     <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="region-bounds-v00" showFeatureCount="0">
@@ -807,6 +809,7 @@
       <SingleCategoryDiagramRenderer diagramType="Histogram" sizeLegend="0" attributeLegend="1">
         <DiagramCategory penColor="#000000" labelPlacementMethod="XHeight" penWidth="0" diagramOrientation="Up" sizeScale="0,0,0,0,0,0" minimumSize="0" barWidth="5" penAlpha="255" maxScaleDenominator="1e+08" backgroundColor="#ffffff" transparency="0" width="15" scaleDependency="Area" backgroundAlpha="255" angleOffset="1440" scaleBasedVisibility="0" enabled="0" height="15" lineSizeScale="0,0,0,0,0,0" sizeType="MM" lineSizeType="MM" minScaleDenominator="inf">
           <fontProperties description="Ubuntu,9,-1,5,50,0,0,0,0,0" style=""/>
+          <attribute field="" color="#000000" label=""/>
         </DiagramCategory>
         <symbol alpha="1" clip_to_extent="1" type="marker" name="sizeSymbol">
           <layer pass="0" class="SimpleMarker" locked="0">
@@ -841,7 +844,7 @@
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
       <attributeactions default="-1"/>
-      <attributetableconfig actionWidgetStyle="dropDown" sortExpression="" sortOrder="-858993459">
+      <attributetableconfig actionWidgetStyle="dropDown" sortExpression="" sortOrder="0">
         <columns>
           <column width="-1" hidden="0" type="field" name="field_1"/>
           <column width="-1" hidden="0" type="field" name="field_2"/>
@@ -985,7 +988,7 @@ def my_form_open(dialog, layer, feature):
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
       <attributeactions default="-1"/>
-      <attributetableconfig actionWidgetStyle="dropDown" sortExpression="" sortOrder="4">
+      <attributetableconfig actionWidgetStyle="dropDown" sortExpression="" sortOrder="0">
         <columns/>
       </attributetableconfig>
       <editform></editform>
@@ -4780,14 +4783,19 @@ def my_form_open(dialog, layer, feature):
     <Digitizing>
       <DefaultSnapToleranceUnit type="int">2</DefaultSnapToleranceUnit>
       <LayerSnappingList type="QStringList">
+        <value>apollo_xyz20180503142841975</value>
+        <value>apollo_xyz20180504154600585</value>
+        <value>dem_features_v0020180123141428928</value>
+        <value>flow_points20180209155354769</value>
         <value>observation_points20170707105208968</value>
         <value>pacific_coast_line_wgs8420170118103649538</value>
-        <value>sfbay_polygon_utm20170414130524760</value>
-        <value>shoreline_polygon20171128111717639</value>
-        <value>dem_features_v0020180123141428928</value>
-        <value>regions_redwood_v0020180123142642953</value>
         <value>region_bounds_v0020180123175927055</value>
         <value>regions_from_bounds20180123175934721</value>
+        <value>regions_redwood_v0020180123142642953</value>
+        <value>results_v0020180124094958362</value>
+        <value>results_v00_copy20180124100258889</value>
+        <value>sfbay_polygon_utm20170414130524760</value>
+        <value>shoreline_polygon20171128111717639</value>
       </LayerSnappingList>
       <LayerSnappingEnabledList type="QStringList">
         <value>disabled</value>
@@ -4795,7 +4803,12 @@ def my_form_open(dialog, layer, feature):
         <value>disabled</value>
         <value>disabled</value>
         <value>disabled</value>
+        <value>disabled</value>
+        <value>disabled</value>
+        <value>disabled</value>
         <value>enabled</value>
+        <value>disabled</value>
+        <value>disabled</value>
         <value>disabled</value>
         <value>disabled</value>
       </LayerSnappingEnabledList>
@@ -4807,7 +4820,12 @@ def my_form_open(dialog, layer, feature):
         <value>2</value>
         <value>2</value>
         <value>2</value>
+        <value>2</value>
+        <value>2</value>
+        <value>2</value>
         <value>1</value>
+        <value>2</value>
+        <value>2</value>
         <value>2</value>
         <value>2</value>
       </LayerSnappingToleranceUnitList>
@@ -4817,7 +4835,12 @@ def my_form_open(dialog, layer, feature):
         <value>to_vertex_and_segment</value>
         <value>to_vertex_and_segment</value>
         <value>to_vertex_and_segment</value>
+        <value>to_vertex_and_segment</value>
+        <value>to_vertex_and_segment</value>
+        <value>to_vertex_and_segment</value>
         <value>to_vertex</value>
+        <value>to_vertex_and_segment</value>
+        <value>to_vertex_and_segment</value>
         <value>to_vertex_and_segment</value>
         <value>to_vertex_and_segment</value>
       </LayerSnapToList>
@@ -4830,7 +4853,12 @@ def my_form_open(dialog, layer, feature):
         <value>0.000000</value>
         <value>0.000000</value>
         <value>0.000000</value>
+        <value>0.000000</value>
+        <value>0.000000</value>
+        <value>0.000000</value>
         <value>8.000000</value>
+        <value>0.000000</value>
+        <value>0.000000</value>
         <value>0.000000</value>
         <value>0.000000</value>
       </LayerSnappingToleranceList>
