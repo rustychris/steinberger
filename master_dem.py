@@ -46,4 +46,6 @@ mbf=field.CompositeField(shp_fn=src_shp,
 
 dem=mbf.to_grid(dx=2,dy=2,
                 bounds=[566300,573500,4149200,4155600])
-dem.write_gdal('master_dem_v00.tif')
+fn='master_dem_v00.tif'
+os.path.exists(fn) and os.unlink(fn)
+dem.write_gdal(fn)

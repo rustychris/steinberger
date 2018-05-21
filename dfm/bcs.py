@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import os
 
 import numpy as np
@@ -18,7 +20,7 @@ class NoaaTides(BC):
         self.datum=datum
         self.z_offset=z_offset
     def write(self,mdu,feat):
-        print "Feature: %s"%(feat['name'])
+        print("Feature: %s"%(feat['name']))
 
         name=feat['name']
         old_bc_fn=mdu.filepath( ['external forcing','ExtForceFile'] )
@@ -37,7 +39,7 @@ class NoaaTides(BC):
 
                 with open(old_bc_fn,'at') as fp:
                     lines=["QUANTITY=%s"%quant,
-                           "FILENAME=%s%s.pli"%(name,var_name),
+                           "FILENAME=%s_%s.pli"%(name,var_name),
                            "FILETYPE=9",
                            "METHOD=3",
                            "OPERAND=O",
@@ -76,7 +78,7 @@ class Storm(BC):
     def write(self,mdu,feat):
         # obvious copy and paste from above.
         # not quite ready to abstract, though
-        print "Feature: %s"%(feat['name'])
+        print("Feature: %s"%(feat['name']))
 
         name=feat['name']
         old_bc_fn=mdu.filepath( ['external forcing','ExtForceFile'] )
@@ -95,7 +97,7 @@ class Storm(BC):
 
                 with open(old_bc_fn,'at') as fp:
                     lines=["QUANTITY=%s"%quant,
-                           "FILENAME=%s%s.pli"%(name,var_name),
+                           "FILENAME=%s_%s.pli"%(name,var_name),
                            "FILETYPE=9",
                            "METHOD=3",
                            "OPERAND=O",

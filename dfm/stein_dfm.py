@@ -17,6 +17,9 @@ mdu['geometry','NetFile']='stein_01_net.nc'
 grid=dfm_grid.DFMGrid('stein_01_net.nc')
 
 run_base_dir='runs/test00'
+if os.path.exists(run_base_dir):
+    shutil.rmtree(run_base_dir) # Safer - blow it away
+
 mdu.set_time_range(start=np.datetime64('2010-01-01'),stop =np.datetime64('2010-01-05'))
 
 os.path.exists(run_base_dir) or os.makedirs(run_base_dir)
