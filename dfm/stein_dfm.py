@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import shutil
 import six
 
 import stompy.model.delft.io as dio
@@ -16,7 +17,7 @@ mdu['geometry','NetFile']='stein_01_net.nc'
 
 grid=dfm_grid.DFMGrid('stein_01_net.nc')
 
-run_base_dir='runs/test00'
+run_base_dir='runs/test01'
 if os.path.exists(run_base_dir):
     shutil.rmtree(run_base_dir) # Safer - blow it away
 
@@ -41,6 +42,17 @@ for bc in bc_shp_data:
     data_src=factory(bc)
     data_src.write(mdu,bc)
 
+###
+
+fixed_weir_out="../out"
+if 1: # fixed weir file is just referenced as static input
+    shutil.copyfile( os.path.join(fixed_weir_out,'fixed_weirs-v02.pli'),
+                     os.path.join(run_base_dir,'fixed_weirs-v02.pli') )
+    mdu['geometry','FixedWeirFile'] = 'fixed_weirs-v02.pli'
+
+
+## 
+    
 mdu.write()
 
 dfm_grid.write_dfm(grid,mdu.filepath(['geometry','NetFile']),

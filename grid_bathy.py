@@ -1,3 +1,5 @@
+import os
+
 from stompy.grid import unstructured_grid
 from stompy.grid import depth_connectivity
 from stompy.spatial import field
@@ -19,4 +21,9 @@ node_depths=depth_connectivity.greedy_edgemin_to_node(g,basic_node_depths,edge_d
 g.add_node_field('depth',node_depths)
 
 
-dfm_grid.write_dfm(g,'dfm/stein_01_net.nc')
+grid_out_fn='dfm/stein_01_net.nc'
+
+if os.path.exists(grid_out_fn):
+    os.unlink(grid_out_fn)
+    
+dfm_grid.write_dfm(g,grid_out_fn)
