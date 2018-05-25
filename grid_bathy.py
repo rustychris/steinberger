@@ -9,7 +9,7 @@ from stompy.model.delft import dfm_grid
 
 dem=field.GdalGrid('master_dem_v00.tif')
 
-g=unstructured_grid.UnstructuredGrid.from_ugrid('grid_v01/grid-v01.nc')
+g=dfm_grid.DFMGrid('janet/janet-out_net.nc')
 
 ## 
 
@@ -21,7 +21,7 @@ node_depths=depth_connectivity.greedy_edgemin_to_node(g,basic_node_depths,edge_d
 g.add_node_field('depth',node_depths)
 
 
-grid_out_fn='dfm/stein_01_net.nc'
+grid_out_fn='dfm/stein_02_net.nc'
 
 if os.path.exists(grid_out_fn):
     os.unlink(grid_out_fn)

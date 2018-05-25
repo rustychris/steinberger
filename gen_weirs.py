@@ -24,7 +24,7 @@ from stompy.grid import unstructured_grid
 import stompy.model.delft.io as dio
 
 data_root='.'
-out_dir='out'
+out_dir='derived'
 
 ## 
 
@@ -115,7 +115,7 @@ g.add_node_field('sill_right',10*np.ones_like(g.nodes['elev_m']))
 
 pli_data=dio.grid_to_pli_data(g,node_fields=['elev_m','sill_left','sill_right'],
                              labeler=lambda i: "L%04d"%(total_count+i))
-dio.write_pli(os.path.join(out_dir,'fixed_weirs-v02.pli'),pli_data)
+dio.write_pli(os.path.join(out_dir,'fixed_weirs-v00.pli'),pli_data)
 
 ## 
 
@@ -148,68 +148,4 @@ def write_node_shp(self,shpname,extra_fields=[]):
 nodes_fn=os.path.join(out_dir,inv_fn.replace(".shp","-nodes.shp"))
 write_node_shp(g,nodes_fn)
 
-##
 
-# Gates!
-
-# Only structures which have been named are included here -
-# other structures will be left as closed, and handled above.
-sel=[ (klass=='Water Control Structure') and (model_name!='')
-      for model_name,klass,geo in zip(inv['model_name'],inv['Class'],inv['geom'])]
-sel=np.array(sel) 
-idxs=np.nonzero(sel)[0]
-
-
-# 6 known gates:
-# a5_guad, a7_alviso, a9_alviso, a14_coyote, a8_alviso, a3w_guad
-# For starters, all of these get the same, constant in time opening
-# the resulting ini file is the StructureFile referred to in the mdu
-with open(os.path.join(out_dir,'gates-v04.ini'),'wt') as fp:
-    for idx in idxs:
-        pli_base_fn="gate-%s.pli"%inv['model_name'][idx]
-        pli_fn=os.path.join(out_dir,pli_base_fn)
-        dio.write_pli(pli_fn, [ (inv['model_name'][idx], # label
-                                 np.array(inv['geom'][idx]) ) ] )
-
-        # these parameters are a good starting point for alviso_a8
-        # may be too wide and/or too shallow for others.
-
-        # not entirely sure of how these geometries are interpreted
-        # Okay - after much trial and error, seems like
-        # sill_level is the elevation of the fixed, weir-like structure below
-        # a moving gate.
-        # lower_edge_level is the elevation of a gate which may be flush with
-        # sill level (flow is allowed only by horizontal opening), below the
-        # sill level (functionally the same as flush), or above the sill_level
-        # (flow is allowed through a vertical gap between sill and the gate)
-        # opening_width: the horizontal opening, i.e. a gate that slides horizontally
-        # and partially blocks the flow.  NOTE!!! this appears to work only in
-        # integer number of flux faces.  i.e. opening_width cannot be used to
-        # create a 1m wide sluice, unless you have 1m wide grid cells.
-        # door_height: should probably just be very large.  In theory this would
-        # allow flow over the gate, but some comments in the code suggest that
-        # is not implemented.
-        # sill_width: an upper bound on opening width, defaults to the length of
-        # the flux faces
-
-        name=inv['model_name'][idx]
-        
-        fp.write("[structure]\n")
-        fp.write("type                         = gate\n")
-        fp.write("id                           = %s\n"%name)
-        fp.write("polylinefile                 = %s\n"%pli_base_fn)
-        fp.write("door_height                  = 15\n")
-        
-        if name=='a8_alviso':
-            fp.write("lower_edge_level             = 1\n") # This can be a tim file
-            fp.write("opening_width                = 25\n") # This can be a tim file
-            fp.write("sill_level                   = 1\n")
-        else:
-            # More like a culvert
-            fp.write("lower_edge_level             = -0.95\n") # This can be a tim file
-            fp.write("opening_width                = 0\n") # This can be a tim file
-            fp.write("sill_level                   = -1.0\n")
-            
-        # the GUI seems to require this to be present.
-        fp.write("horizontal_opening_direction = symmetric\n")
-        fp.write("\n")

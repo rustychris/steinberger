@@ -13,9 +13,9 @@ from stompy.model.delft import dfm_grid
 
 mdu=dio.MDUFile('template.mdu')
 
-mdu['geometry','NetFile']='stein_01_net.nc'
+mdu['geometry','NetFile']='stein_02_net.nc'
 
-grid=dfm_grid.DFMGrid('stein_01_net.nc')
+grid=dfm_grid.DFMGrid(mdu['geometry','NetFile'])
 
 run_base_dir='runs/test01'
 if os.path.exists(run_base_dir):
@@ -26,7 +26,13 @@ mdu.set_time_range(start=np.datetime64('2010-01-01'),stop =np.datetime64('2010-0
 os.path.exists(run_base_dir) or os.makedirs(run_base_dir)
 mdu.set_filename(os.path.join(run_base_dir,'flowfm.mdu'))
 
-## - 
+## -
+
+ext_fn=mdu.filepath( ['external forcing','ExtForceFile'] )
+
+# Clear any pre-existing BC file:
+os.path.exists(ext_fn) and os.unlink(ext_fn)
+
 # Set BCs from shapefile
 import bcs
 six.moves.reload_module(bcs)
@@ -40,15 +46,15 @@ bc_shp_data=wkb2shp.shp2geom(bc_shp)
 
 for bc in bc_shp_data:
     data_src=factory(bc)
-    data_src.write(mdu,bc)
+    data_src.write(mdu=mdu,feature=bc,grid=grid)
 
 ###
 
-fixed_weir_out="../out"
+fixed_weir_out="../derived"
 if 1: # fixed weir file is just referenced as static input
-    shutil.copyfile( os.path.join(fixed_weir_out,'fixed_weirs-v02.pli'),
-                     os.path.join(run_base_dir,'fixed_weirs-v02.pli') )
-    mdu['geometry','FixedWeirFile'] = 'fixed_weirs-v02.pli'
+    shutil.copyfile( os.path.join(fixed_weir_out,'fixed_weirs-v00.pli'),
+                     os.path.join(run_base_dir,'fixed_weirs-v00.pli') )
+    mdu['geometry','FixedWeirFile'] = 'fixed_weirs-v00.pli'
 
 
 ## 
