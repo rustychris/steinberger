@@ -6,6 +6,7 @@ import numpy as np
 import stompy.model.delft.io as dio
 from stompy.io.local import noaa_coops
 from stompy import utils, filters
+from stompy.model.delft import dfm_grid
 
 cache_dir='cache'
 os.path.exists(cache_dir) or os.mkdir(cache_dir)
@@ -19,15 +20,15 @@ class NoaaTides(BC):
         self.station=station
         self.datum=datum
         self.z_offset=z_offset
-    def write(self,mdu,feat):
-        print("Feature: %s"%(feat['name']))
+    def write(self,mdu,feature,grid):
+        print("Feature: %s"%(feature['name']))
 
-        name=feat['name']
+        name=feature['name']
         old_bc_fn=mdu.filepath( ['external forcing','ExtForceFile'] )
 
         for var_name in self.var_names:
-            if feat['geom'].type=='LineString':
-                pli_data=[ (name, np.array(feat['geom'].coords)) ]
+            if feature['geom'].type=='LineString':
+                pli_data=[ (name, np.array(feature['geom'].coords)) ]
                 base_fn=os.path.join(mdu.base_path,"%s_%s"%(name,var_name))
                 pli_fn=base_fn+'.pli'
                 dio.write_pli(pli_fn,pli_data)
@@ -46,11 +47,11 @@ class NoaaTides(BC):
                            ""]
                     fp.write("\n".join(lines))
 
-                self.write_data(mdu,feat,var_name,base_fn)
+                self.write_data(mdu,feature,var_name,base_fn)
             else:
                 assert False
 
-    def write_data(self,mdu,feat,var_name,base_fn):
+    def write_data(self,mdu,feature,var_name,base_fn):
         tides=noaa_coops.coops_dataset_product(self.station,'water_level',
                                                mdu.time_range()[1],mdu.time_range()[2],
                                                days_per_request='M',cache_dir=cache_dir)
@@ -73,19 +74,20 @@ class NoaaTides(BC):
 
 class Storm(BC):
     var_names=['q']
+    dredge_depth=-1.0
     def __init__(self,name):
         self.name=name
-    def write(self,mdu,feat):
+    def write(self,mdu,feature,grid):
         # obvious copy and paste from above.
         # not quite ready to abstract, though
-        print("Feature: %s"%(feat['name']))
+        print("Feature: %s"%(feature['name']))
 
-        name=feat['name']
+        name=feature['name']
         old_bc_fn=mdu.filepath( ['external forcing','ExtForceFile'] )
 
         for var_name in self.var_names:
-            if feat['geom'].type=='LineString':
-                pli_data=[ (name, np.array(feat['geom'].coords)) ]
+            if feature['geom'].type=='LineString':
+                pli_data=[ (name, np.array(feature['geom'].coords)) ]
                 base_fn=os.path.join(mdu.base_path,"%s_%s"%(name,var_name))
                 pli_fn=base_fn+'.pli'
                 dio.write_pli(pli_fn,pli_data)
@@ -104,11 +106,13 @@ class Storm(BC):
                            ""]
                     fp.write("\n".join(lines))
 
-                self.write_data(mdu,feat,var_name,base_fn)
+                self.write_data(mdu,feature,var_name,base_fn)
+
+                dfm_grid.dredge_boundary(grid,pli_data[0][1],self.dredge_depth)
             else:
                 assert False
 
-    def write_data(self,mdu,feat,var_name,base_fn):
+    def write_data(self,mdu,feature,var_name,base_fn):
         ref_date,run_start,run_stop=mdu.time_range()
 
         # trapezoid hydrograph
