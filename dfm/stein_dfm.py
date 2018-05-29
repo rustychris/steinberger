@@ -13,7 +13,7 @@ from stompy.model.delft import dfm_grid
 
 mdu=dio.MDUFile('template.mdu')
 
-mdu['geometry','NetFile']='stein_02_net.nc'
+mdu['geometry','NetFile']='stein_03_net.nc'
 
 grid=dfm_grid.DFMGrid(mdu['geometry','NetFile'])
 
