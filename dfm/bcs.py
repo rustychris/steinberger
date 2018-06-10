@@ -14,6 +14,55 @@ os.path.exists(cache_dir) or os.mkdir(cache_dir)
 class BC(object):
     pass
 
+class Constant(BC):
+    def __init__(self,var_name,value):
+        """
+        quantity: 'salinity','temperature'
+        value: floating point
+        """
+        self.var_name=var_name
+        self.value=value
+    def write(self,mdu,feature,grid):
+        print("Feature: %s"%(feature['name']))
+
+        name=feature['name']
+        old_bc_fn=mdu.filepath( ['external forcing','ExtForceFile'] )
+
+        assert feature['geom'].type=='LineString'
+        pli_data=[ (name, np.array(feature['geom'].coords)) ]
+        base_fn=os.path.join(mdu.base_path,"%s_%s"%(name,self.var_name))
+        pli_fn=base_fn+'.pli'
+        dio.write_pli(pli_fn,pli_data)
+
+        if self.var_name=='salinity':
+            quant='salinitybnd'
+        elif self.var_name=='temperature':
+            quant='temperaturebnd'
+        else:
+            assert False
+
+        with open(old_bc_fn,'at') as fp:
+            lines=["QUANTITY=%s"%quant,
+                   "FILENAME=%s_%s.pli"%(name,self.var_name),
+                   "FILETYPE=9",
+                   "METHOD=3",
+                   "OPERAND=O",
+                   ""]
+            fp.write("\n".join(lines))
+
+        self.write_data(mdu,feature,self.var_name,base_fn)
+
+    def write_data(self,mdu,feature,var_name,base_fn):
+        ref_date,start_date,end_date = mdu.time_range()
+        period=np.array([start_date,end_date])
+        elapsed_minutes=(period - ref_date)/np.timedelta64(60,'s')
+
+        # just write a single node
+        tim_fn=base_fn + "_0001.tim"
+        with open(tim_fn,'wt') as fp:
+            for t in elapsed_minutes:
+                fp.write("%g %g\n"%(t,self.value))
+        
 class NoaaTides(BC):
     var_names=['ssh']
     def __init__(self,station,datum='NAVD88',z_offset=0.0):
@@ -75,6 +124,10 @@ class NoaaTides(BC):
 class Storm(BC):
     var_names=['q']
     dredge_depth=-1.0
+    storm_flow=10.0
+    storm_duration_h=3.0
+    storm_start_h=48.0
+    
     def __init__(self,name):
         self.name=name
     def write(self,mdu,feature,grid):
@@ -117,13 +170,13 @@ class Storm(BC):
 
         # trapezoid hydrograph
         times=np.array( [run_start,
-                         run_start+np.timedelta64(47,'h'),
-                         run_start+np.timedelta64(48,'h'),
-                         run_start+np.timedelta64(48+3,'h'),
-                         run_start+np.timedelta64(48+4,'h'),
+                         run_start+np.timedelta64(self.storm_start_h-1,'h'),
+                         run_start+np.timedelta64(self.storm_start_h,'h'),
+                         run_start+np.timedelta64(self.storm_start_h+self.storm_duration_h,'h'),
+                         run_start+np.timedelta64(self.storm_start_h+self.storm_duration_h+1,'h'),
                          run_stop+np.timedelta64(1,'D')] )
         flows=np.array( [0.0,0.0,
-                         10.0,10.0,0.0,0.0] )
+                         self.storm_flow,self.storm_flow,0.0,0.0] )
         elapsed_minutes=(times - ref_date)/np.timedelta64(60,'s')
 
         # just write a single node

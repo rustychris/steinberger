@@ -17,7 +17,9 @@ mdu['geometry','NetFile']='stein_03_net.nc'
 
 grid=dfm_grid.DFMGrid(mdu['geometry','NetFile'])
 
-run_base_dir='runs/test01'
+run_base_dir='runs/test02'
+
+
 if os.path.exists(run_base_dir):
     shutil.rmtree(run_base_dir) # Safer - blow it away
 
@@ -39,14 +41,15 @@ six.moves.reload_module(bcs)
 from bcs import *
 
 def factory(feat):
-    return eval(feat['src'])
+    code='[' + feat['src'] + ']'
+    return eval(code)
 
 bc_shp='forcing.shp'
 bc_shp_data=wkb2shp.shp2geom(bc_shp)
 
 for bc in bc_shp_data:
-    data_src=factory(bc)
-    data_src.write(mdu=mdu,feature=bc,grid=grid)
+    for data_src in factory(bc):
+        data_src.write(mdu=mdu,feature=bc,grid=grid)
 
 ###
 

@@ -46,7 +46,7 @@ Dcenterinside                     = 1.                  # Limit cell center (1.0
 Bamin                             = 1.d-6               # Minimum grid cell area, in combination with cut cells
 OpenBoundaryTolerance             = 3.                  # Search tolerance factor between boundary polyline and grid cells, in cell size units
 RenumberFlowNodes                 = 1                   # Renumber the flow nodes (1: yes, 0: no)
-Kmx                               = 0                   # Maximum number of vertical layers
+Kmx                               = 2                   # Maximum number of vertical layers
 Layertype                         = 1                   # Vertical layer type (1: all sigma, 2: all z, 3: use VertplizFile)
 Numtopsig                         = 0                   # Number of sigma layers in top of z-layer model
 SigmaGrowthFactor                 = 1.                  # Layer thickness growth factor from bed up
@@ -110,7 +110,7 @@ UnifFrictCoef1D                   = 2.3d-2              # Uniform friction coeff
 UnifFrictCoefLin                  = 0.                  # Uniform linear friction coefficient for ocean models (m/s) (0: no friction)
 Umodlin                           = 1.                  # Linear friction umod, for ifrctyp=4,5,6
 Vicouv                            = 1.                  # Uniform horizontal eddy viscosity (m2/s)
-Dicouv                            = 1.                  # Uniform horizontal eddy diffusivity (m2/s)
+Dicouv                            = 0.                  # Uniform horizontal eddy diffusivity (m2/s)
 Vicoww                            = 5.d-5               # Uniform vertical eddy viscosity (m2/s)
 Dicoww                            = 5.d-5               # Uniform vertical eddy diffusivity (m2/s)
 Vicwminb                          = 0.                  # Minimum visc in prod and buoyancy term (m2/s)
@@ -126,8 +126,8 @@ SelfAttractionLoading             = 0                   # Self attraction and lo
 Doodsonstart                      = 55.565              # TRIWAQ: 55.565, D3D: 57.555
 Doodsonstop                       = 375.575             # TRIWAQ: 375.575, D3D: 275.555
 Doodsoneps                        = 3.d-2               # TRIWAQ = 0.0  400 cmps , D3D = 0.03   60 cmps
-Salinity                          = 0                   # Include salinity, (0=no, 1=yes)
-InitialSalinity                   = 0.                  # Uniform initial salinity concentration (ppt)
+Salinity                          = 1                   # Include salinity, (0=no, 1=yes)
+InitialSalinity                   = 1.                  # Uniform initial salinity concentration (ppt)
 Sal0abovezlev                     = -999.               # Vertical level (m) above which salinity is set 0
 DeltaSalinity                     = -999.               # for testcases
 Backgroundsalinity                = 30.                 # Background salinity for eqn. of state (ppt)
@@ -182,7 +182,7 @@ RefDate                           = 20010101            # Reference date (yyyymm
 Tzone                             = 0.                  # Time zone assigned to input time series
 DtUser                            = 300.                # Time interval (s) for external forcing update
 DtNodal                           = 21600.              # Time interval (s) for updating nodal factors in astronomical boundary conditions
-DtMax                             = 30.                 # Maximal computation timestep (s)
+DtMax                             = 15.                 # Maximal computation timestep (s)
 Dtfacmax                          = 1.1                 # Max timestep increase factor ( )
 DtInit                            = 1.                  # Initial computation timestep (s)
 Tunit                             = S                   # Time unit for start/stop times (D, H, M or S)

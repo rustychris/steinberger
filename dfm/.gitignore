@@ -1,3 +1,4 @@
 *.pyc
 cache
 runs
+.ipynb_checkpoints
