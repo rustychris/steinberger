@@ -51,9 +51,11 @@ def dflowfm(mdu_fn,args=['--autostartstop'],nprocs=1):
             log.info("Command '%s' completed"%cmd)
     return res
 
+def factory(feat):
+    code='[' + feat['src'] + ']'
+    return eval(code)
 
-
-def run_all(run_base_dir,storm_start_h,storm_duration_h,storm_flow,force=False):
+def run_all(run_base_dir,storm_start_h,storm_duration_h,storm_flow,sources=None,force=False):    
     mdu=dio.MDUFile('template.mdu')
 
     mdu['geometry','NetFile']='stein_03_net.nc'
@@ -82,14 +84,13 @@ def run_all(run_base_dir,storm_start_h,storm_duration_h,storm_flow,force=False):
     Storm.storm_duration_h=storm_duration_h
     Storm.storm_start_h=storm_start_h
 
-    def factory(feat):
-        code='[' + feat['src'] + ']'
-        return eval(code)
-
-    bc_shp='forcing.shp'
+    bc_shp='forcing_with_q.shp'
     bc_shp_data=wkb2shp.shp2geom(bc_shp)
 
     for bc in bc_shp_data:
+        if sources is not None and bc['name'] not in sources:
+            print("Skipping %s"%bc['name'])
+            continue
         for data_src in factory(bc):
             data_src.write(mdu=mdu,feature=bc,grid=grid)
 
